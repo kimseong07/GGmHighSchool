@@ -1,4 +1,5 @@
-# GGmHighSchool
+# GGmHighSchoolStudies
+
 ## AnEvenNum
 ```
 #include <iostream>
