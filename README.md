@@ -54,7 +54,7 @@ int main()
 	return 0;
 }
 ```
-#### rev
+#### Rev
 ```
 #include <iostream>
 using namespace std;
@@ -80,7 +80,7 @@ int main()
 	cout << rev(n);
 }
 ```
-##### unityIdlemoney
+##### UnityIdlemoney
 ```
 using System.Collections;
 using System.Collections.Generic;
