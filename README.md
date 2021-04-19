@@ -1203,3 +1203,32 @@ public class FadeCo : MonoBehaviour
     }
 }
 ```
+###### NumRev
+```
+#include <iostream>
+#include <stack>
+ 
+using namespace std;
+ 
+int main()
+{
+	stack<int> s;
+ 
+	int num[1000];
+	int input;
+	int max = 0;
+ 
+	cin >> input;
+	for (int i = 0; i < input; i++)
+	{
+		cin >> num[i];
+		max++;
+	}
+	while (max > 0)
+	{
+		max--;
+		cout << num[max] << endl;
+	}
+	return 0;
+}
+```
