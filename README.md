@@ -1082,3 +1082,124 @@ int Dequeue(Queue* queue)
 	return re;
 }
 ```
+###### corutine 
+```
+public enum eFadeState
+{
+    None,
+    FadeOut,
+    ChangeBg,
+    FadeIn,
+    Done
+}
+
+public class FadeCo : MonoBehaviour
+{
+    eFadeState fadeState;
+
+    Image imgBg;
+
+    public float Delay = 10f;
+    public float Delay2 = 10f;
+
+    IEnumerator iStateCo = null;
+    private void Awake()
+    {
+        imgBg = this.gameObject.GetComponent<Image>();
+        if(imgBg == null)
+        {
+            Debug.LogWarning("img is null");
+        }
+    }
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Space) && fadeState == eFadeState.None)
+        {
+            fadeState = eFadeState.None;
+            NextState();
+        }
+    }
+
+    IEnumerator None()
+    {
+        while(fadeState == eFadeState.None)
+        {
+            fadeState = eFadeState.FadeOut;
+            yield return null;
+        }
+
+        NextState();
+    }
+
+    IEnumerator FadeOut()
+    {
+        float alpha = 0f;
+        while(fadeState == eFadeState.FadeOut)
+        {
+            if(alpha < Delay)
+            {
+                alpha += Time.deltaTime;
+            }
+            else
+            {
+                fadeState = eFadeState.ChangeBg;
+            }
+
+            alpha = Mathf.Clamp(alpha, 0, Delay);
+            imgBg.color = new Color(imgBg.color.r, imgBg.color.g, imgBg.color.b, alpha);
+
+            yield return null;
+        }
+
+        NextState();
+    }
+
+    IEnumerator ChangeBg()
+    {
+        yield return null;
+
+        fadeState = eFadeState.FadeIn;
+
+        NextState();
+    }
+
+    IEnumerator FadeIn()
+    {
+        float alpha = 1f;
+        while (fadeState == eFadeState.FadeIn)
+        {
+            if (alpha > 0)
+            {
+                alpha -= Time.deltaTime;
+            }
+            else
+            {
+                fadeState = eFadeState.Done;
+            }
+
+            alpha = Mathf.Clamp(alpha, 0, Delay2);
+            imgBg.color = new Color(imgBg.color.r, imgBg.color.g, imgBg.color.b, alpha);
+
+            yield return null;
+        }
+
+        NextState();
+    }
+
+    IEnumerator Done()
+    {
+        yield return null;
+
+        fadeState = eFadeState.None;
+    }
+
+    void NextState()
+    {
+        // 04월 15일 배운 하이라이트 함수
+        MethodInfo mInfo = this.GetType().GetMethod(fadeState.ToString(), BindingFlags.Instance | BindingFlags.NonPublic);
+        iStateCo = (IEnumerator)mInfo.Invoke(this, null); 
+
+        StartCoroutine(iStateCo);
+    }
+}
+```
