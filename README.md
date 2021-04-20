@@ -1249,20 +1249,27 @@ using namespace std;
 char Stage[10][16] =
 {
 	"+++++++++++++++",
-	"+++++++++++++++",
-	"++++&  ++++++++",
-	"++++ OO++++++++",
-	"++++ O ++++.+++",
-	"++++++ ++++.+++",
-	"++++++     .+++",
+	"+++      ++++++",
+	"++++&    ++++++",
+	"++++ OO  ++++++",
+	"++++ O   ++.+++",
+	"+++++   @++.+++",
+	"+++++      .+++",
 	"+++++    +  +++",
-	"+++++    ++++++",
+	"+++++ @  ++++++",
 	"+++++++++++++++"
 };
 
 char backgroundMap[10][16];
 int currentX, currentY;
 int totalMove;
+
+bool bPull;
+
+int portalX = 0;
+int portalY = 0;
+int portalX1 = 0;
+int portalY1 = 0;
 
 void gotoXY(int x, int y)
 {
@@ -1293,7 +1300,7 @@ void initScreen()
 	gotoXY(currentX, currentY);
 	_putch('&');
 	gotoXY(20, 2);
-	puts("Q:종료");
+	puts("Q:종료 R:다시 하기");
 	gotoXY(20, 4);
 	cout << "이동 회수 : " << totalMove;
 
@@ -1339,12 +1346,30 @@ void move(int dir)
 	{
 		if (backgroundMap[currentY + dir_y][currentX + dir_x] == 'O')
 		{
+			if (backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] == backgroundMap[portalY1][portalX1])
+			{
+				backgroundMap[currentY + dir_y][currentX + dir_x] = ' ';
+				backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] = '@';
+				backgroundMap[portalY][portalX] = 'O';
+			}
+			//위쪽 
+			if (backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] == backgroundMap[portalY][portalX])
+			{
+				backgroundMap[currentY + dir_y][currentX + dir_x] = ' ';
+				backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] = '@';
+				backgroundMap[portalY1][portalX1] = 'O';
+			}
+
 			if (backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] == ' '
 				|| backgroundMap[currentY + dir_y * 2][currentX + dir_x * 2] == '.')
 			{
 				if (Stage[currentY + dir_y][currentX + dir_x] == '.')
 				{
 					backgroundMap[currentY + dir_y][currentX + dir_x] = '.';
+				}
+				else if (Stage[currentY + dir_y][currentX + dir_x] == '@')
+				{
+					backgroundMap[currentY + dir_y][currentX + dir_x] = '@';
 				}
 				else
 				{
@@ -1357,6 +1382,18 @@ void move(int dir)
 				return;
 			}
 		}
+		if (bPull)
+		{
+			if (Stage[currentY - 1][currentX] == '.')
+			{
+				backgroundMap[currentY - 1][currentX] = '.';
+			}
+			else
+			{
+				backgroundMap[currentY - 1][currentX] =  ' ';
+			}
+			backgroundMap[currentY - 1 + dir_y][currentX + dir_x] = '8';
+		}
 
 		currentX += dir_x;
 		currentY += dir_y;
@@ -1367,60 +1404,136 @@ void move(int dir)
 int main()
 {
 	int ch;
-
-	memcpy(backgroundMap, Stage, sizeof(backgroundMap));
-
-	for (int y = 0; y < 10; y++)
+	while (true)
 	{
-		for (int x = 0; x < 15; x++)
+		memcpy(backgroundMap, Stage, sizeof(backgroundMap));
+
+		for (int y = 0; y < 10; y++)
 		{
-			if (backgroundMap[y][x] == '&')
+			for (int x = 0; x < 15; x++)
 			{
-				currentX = x;
-				currentY = y;
-				backgroundMap[y][x] = ' ';
+				if (backgroundMap[y][x] == '&')
+				{
+					currentX = x;
+					currentY = y;
+					backgroundMap[y][x] = ' ';
+				}
+				if (backgroundMap[y][x] == '@')
+				{
+					if (portalX == 0 && portalY == 0)
+					{
+						portalX = x;
+						portalY = y;
+					}
+					else
+					{
+						portalX1 = x;
+						portalY1 = y;
+					}
+				}
 			}
 		}
-	}
 
-	clrscr();
-	totalMove = 0;
+		clrscr();
+		totalMove = 0;
+		bPull = false;
 
-	while (1)
-	{
-		initScreen();
-		ch = _getch();
-		if (ch == 0xE0 || ch == 0)
+		while (true)
 		{
+			initScreen();
 			ch = _getch();
-			switch (ch)
+			if (ch == 0xE0 || ch == 0)
 			{
-			case LEFT:
-			case RIGHT:
-			case UP:
-			case DOWN:
-				move(ch);
-				break;
+				ch = _getch();
+				switch (ch)
+				{
+				case LEFT:
+				case RIGHT:
+				case UP:
+				case DOWN:
+					move(ch);
+					break;
+				}
 			}
-		}
-		else
-		{
-			ch = tolower(ch);
-			if (ch == 'q')
+			else
+			{
+				ch = tolower(ch);
+				if (ch == 'r')
+				{
+					break;
+				}
+				else if (ch == 'q')
+				{
+					clrscr();
+					exit(0);
+				}
+				else if (ch == 'p')
+				{
+					if (bPull)
+					{
+						if (backgroundMap[currentY - 1][currentX] == '8')
+						{
+							backgroundMap[currentY - 1][currentX] = 'O';
+
+							bPull = false;
+						}
+						else if (backgroundMap[currentY][currentX - 1] == '8')
+						{
+							backgroundMap[currentY][currentX - 1] = 'O';
+
+							bPull = false;
+						}
+						else if (backgroundMap[currentY +1][currentX] == '8')
+						{
+							backgroundMap[currentY + 1][currentX] = 'O';
+
+							bPull = false;
+						}
+						else if (backgroundMap[currentY][currentX + 1] == '8')
+						{
+							backgroundMap[currentY][currentX + 1] = 'O';
+
+							bPull = false;
+						}
+					}
+					else
+					{
+						if (backgroundMap[currentY - 1][currentX] == 'O')
+						{
+							backgroundMap[currentY - 1][currentX] = '8';
+							bPull = true;
+						}
+						else if (backgroundMap[currentY][currentX - 1] == 'O')
+						{
+							backgroundMap[currentY][currentX - 1] = '8';
+
+							bPull = true;
+						}
+						else if (backgroundMap[currentY + 1][currentX] == 'O')
+						{
+							backgroundMap[currentY + 1][currentX] = '8';
+
+							bPull = true;
+						}
+						else if (backgroundMap[currentY][currentX + 1] == 'O')
+						{
+							backgroundMap[currentY][currentX + 1] = '8';
+
+							bPull = true;
+						}
+					}
+				}
+			}
+			if (checkEnd())
 			{
 				clrscr();
+				gotoXY(10, 4);
+				cout << "끝났습니다. 아무 키나 누르세요.";
+				_getch();
+				clrscr();
 				exit(0);
+				break;
 			}
-		}
-		if (checkEnd())
-		{
-			clrscr();
-			gotoXY(10, 4);
-			cout << "끝났습니다. 아무 키나 누르세요.";
-			_getch();
-			clrscr();
-			exit(0);
-			break;
 		}
 	}
 	return 0;
