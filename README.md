@@ -2187,3 +2187,107 @@ int main()
 	return 0;
 }
 ```
+###### Calculator
+```
+#include <iostream>
+#include <stack>
+using namespace std;
+
+#define MAX_STACK_SIZE 100
+#define MAX_EXPR_SIZE 100
+
+typedef enum {
+	lparen, rparen, pl, mi, times, divide, mode, eos, operand
+} precedence;
+
+precedence stack[MAX_STACK_SIZE];
+char expr[MAX_EXPR_SIZE];
+
+static int isp[] = { 0,19,12,12,13,13,13,0 };
+static int icp[] = { 20,19,12,12,13,13,13,0 };
+
+precedence get_token(char* symbol, int* n)
+{
+	*symbol = expr[(*n)++];
+	switch (*symbol) {
+	case '(': return lparen;
+	case ')': return rparen;
+	case ' + ': return pl;
+	case ' - ': return mi;
+	case ' / ': return divide;
+	case ' * ': return times;
+	case ' % ': return mode;
+	case ' ': return eos;
+	default: return operand;
+	}
+}
+void postfix(void)
+{
+	char symbol;
+	precedence token;
+	int n = 0;
+	int top = 0;
+	stack[0] = eos;
+	for (token = get_token(&symbol, &n); token != eos; token = get_token(&symbol, &n))
+	{
+		if (token == operand)
+		{
+			cout << symbol;
+		}
+		else if (token == rparen)
+		{
+			while (stack[top] != lparen)
+			{
+				print_token(pop());
+			}
+			pop();
+		}
+		else 
+		{
+			while (isp[stack[top]] >= icp[token])
+			{
+				print_token(pop());
+			}
+			push(token);
+		}
+	}
+	while ((token = pop()) != eos)
+	{
+		print_token(token);
+	}
+	cout << endl;
+}
+int eval(void)
+{
+	precedence token;
+	char symbol;
+	int op1, op2;
+	int n = 0;
+	int top = -1;
+	token = get_token(&symbol, &n);
+	while (token != eos) {
+		if (token == operand)
+		{
+			push(symbol - '0');
+		}
+		else
+		{
+			op2 = pop();
+			op1 = pop();
+			switch (token)
+			{
+			case pl: push(op1 + op2);
+				break;
+			case mi: push(op1 - op2);
+				break;
+			case times: push(op1 * op2);
+				break;
+			case divide: push(op1 / op2);
+				break;
+			case mode: push(op1 % op2);
+			}
+		}
+		token = get_token(&symbol, &n);
+	}
+	return pop();
+}
