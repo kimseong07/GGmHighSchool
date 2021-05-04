@@ -2291,3 +2291,248 @@ int eval(void)
 	}
 	return pop();
 }
+```
+###### dino-run
+```
+//20304 김성규
+#include <iostream>
+#include <Windows.h>
+#include <conio.h>
+
+using namespace std;
+
+#define DINO_BOTTOM_Y 12
+#define DINO_X 7
+#define BULLET_Y 20
+#define BULLET_X 10
+#define TREE_BOTTOM_Y 20
+#define TREE_BOTTOM_X 46
+
+void gotoXY(int x, int y)
+{
+    HANDLE hOut;
+    COORD Cur;
+    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    Cur.X = x * 2;
+    Cur.Y = y;
+    SetConsoleCursorPosition(hOut, Cur);
+}
+
+void clrscr()
+{
+    system("cls");
+}
+
+/*
+"        $$$$$$$ "
+"       $$ $$$$$$"
+"       $$$$$$$$$"
+"$      $$$      "
+"$$     $$$$$$$  "
+"$$$   $$$$$     "
+" $$  $$$$$$$$$$ "
+" $$$$$$$$$$$    "
+"  $$$$$$$$$$    "
+"    $$$$$$$$    "
+"     $$$$$$     "
+"     $    $$$   "
+"     $$         "
+
+"        $$$$$$$ "
+"       $$ $$$$$$"
+"       $$$$$$$$$"
+"$      $$$      "
+"$$     $$$$$$$  "
+"$$$   $$$$$     "
+" $$  $$$$$$$$$$ "
+" $$$$$$$$$$$    "
+"  $$$$$$$$$$    "
+"    $$$$$$$$    "
+"     $$$$$$     "
+"     $$$  $     "
+"          $$    "
+*/
+
+bool legFlag;
+
+void setConsoleView()
+{
+    system("mode con:cols=100 lines=25");
+    system("title 공룡 게임");
+}
+
+void drawDino(int dinoY)
+{
+    gotoXY(0, dinoY);
+
+    if (legFlag)
+    {
+        cout << "        $$$$$$$$$$$" << endl;
+        cout << "       $$ $$$$$$$$$" << endl;
+        cout << "       $$$$$$$$$$$$" << endl;
+        cout << "   $   $$$         " << endl;
+        cout << "  $$   $$$$$$$$$$  " << endl;
+        cout << " $$$  $$$$$        " << endl;
+        cout << "$$$  $$$$$$$       " << endl;
+        cout << "$$$$$$$$$$$$$$$    " << endl;
+        cout << " $$$$$$$$$$$       " << endl;
+        cout << "    $$$$$$$$       " << endl;
+        cout << "     $$$$$$        " << endl;
+        cout << "     $    $$$      " << endl;
+        cout << "     $$            ";
+    }
+    else
+    {
+        cout << "                   " << endl;
+        cout << "        $$$$$$$$$$$" << endl;
+        cout << "       $$$ $$$$$$$$" << endl;
+        cout << "$      $$$$$$$$$$$$" << endl;
+        cout << "$$     $$$$$$$$$$  " << endl;
+        cout << "$$$   $$$$$        " << endl;
+        cout << " $$  $$$$$$$$$$    " << endl;
+        cout << " $$$$$$$$$$$       " << endl;
+        cout << "  $$$$$$$$$$       " << endl;
+        cout << "    $$$$$$$$       " << endl;
+        cout << "     $$$$$$        " << endl;
+        cout << "     $$$  $        " << endl;
+        cout << "          $$       ";
+    }
+    legFlag = !legFlag;
+}
+
+void drawTree(int treeX)
+{
+    gotoXY(treeX, TREE_BOTTOM_Y);
+    cout << "$$$$";
+    gotoXY(treeX, TREE_BOTTOM_Y + 1);
+    cout << " $$ ";
+    gotoXY(treeX, TREE_BOTTOM_Y + 2);
+    cout << " $$ ";
+    gotoXY(treeX, TREE_BOTTOM_Y + 3);
+    cout << " $$ ";
+    gotoXY(treeX, TREE_BOTTOM_Y + 4);
+    cout << " $$ ";
+}
+
+void drawBullet(int bulletX)
+{
+    gotoXY(bulletX, BULLET_Y);
+    cout << "XXXX";
+}
+
+void scoreT(int score)
+{
+    gotoXY(40, 1);
+    cout << "score : " << score << endl;
+}
+
+int getKeyDown()
+{
+    if (_kbhit() != 0)
+    {
+        return _getch();
+    }
+    return 0;
+}
+
+int main(void)
+{
+    legFlag = false;
+
+    bool isJumping = false;
+    bool isBottom = true;
+    bool isBullet = false;
+    const int gravity = 3;
+
+    int dinoX = DINO_X;
+    int dinoY = DINO_BOTTOM_Y;
+    int treeX = TREE_BOTTOM_X;
+    int treeY = TREE_BOTTOM_Y;
+    int bulletX = BULLET_X;
+    int score = 0;
+
+    setConsoleView();
+
+    while (true)
+    {
+        switch (getKeyDown())
+        {
+        case 'j':
+            if (isBottom)
+            {
+                isJumping = true;
+                isBottom = false;
+            }
+            break;
+        case 'a':
+            if (isBullet == false)
+            {
+                isBullet = true;
+            }
+            break;
+        default:
+            break;
+        }
+
+        if (isBullet)
+        {
+            drawBullet(bulletX);
+            bulletX += 2;
+        }
+
+        if (isJumping)
+        {
+            dinoY -= gravity;
+        }
+        else
+        {
+            dinoY += gravity;
+        }
+
+        if (dinoY >= DINO_BOTTOM_Y)
+        {
+            dinoY = DINO_BOTTOM_Y;
+            isBottom = true;
+        }
+        else if (dinoY <= 3)
+        {
+            isJumping = false;
+        }
+
+        treeX -= 2;
+
+        if (treeX <= 0)
+        {
+            treeX = TREE_BOTTOM_X;
+        }
+
+        if (bulletX >= 45)
+        {
+            isBullet = false;
+            bulletX = BULLET_X;
+        }
+
+        if (bulletX >= treeX-1 && isBullet)
+        {
+            isBullet = false;
+            bulletX = BULLET_X;
+            treeX = TREE_BOTTOM_X;
+
+            score++;
+        }
+
+        if (dinoX >= treeX - 1 && dinoY >= DINO_BOTTOM_Y)
+        {
+            return 0;
+        }
+        scoreT(score);
+        drawDino(dinoY);
+        drawTree(treeX);
+        
+        Sleep(80);
+        clrscr();
+    }
+
+    return 0;
+}
+```
