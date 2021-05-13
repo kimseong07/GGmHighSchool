@@ -2536,3 +2536,97 @@ int main(void)
     return 0;
 }
 ```
+###### rhythm game class
+```
+#pragma once
+#include "console.h"
+
+class Note
+{
+private:
+	int x;
+	int y;
+	int index;
+
+	int _input;
+	int score;
+
+public:
+	void initNote();
+
+	void drawNote();
+	void downNote();
+
+	void checkEnd();
+
+	void playSound();
+
+	int getKeyDown();
+
+	void keyInput();
+};
+```
+```
+#include "note.h"
+
+void Note::initNote()
+{
+	index = rand() % 7 + 1;
+
+	x = index * 2;
+	y = 0;
+}
+
+void Note::drawNote()
+{
+	gotoXY(x,y);
+	setTextColor(11);
+	std::cout << "@";
+	setTextColor(10);
+}
+
+void Note::downNote()
+{
+	y++;
+}
+
+void Note::checkEnd()
+{
+	if (y == 12)
+	{
+		playSound();
+		index = rand() % 7 + 1;
+		initNote();
+	}
+}
+
+void Note::playSound()
+{
+	int data[7] = { 523, 587, 659, 698, 784, 880, 988 };
+
+	beep(data[index - 1], 500);
+}
+
+int Note::getKeyDown()
+{
+	if (_kbhit() != 0)
+	{
+		return _getch() - '0';
+	}
+}
+
+void Note::keyInput()
+{
+	_input = getKeyDown();
+	if (_input == index && y == 11)
+	{
+		if (y == 11)
+		{
+			playSound();
+			index = rand() % 7 + 1;
+			initNote();
+		}
+	}
+	
+}
+```
