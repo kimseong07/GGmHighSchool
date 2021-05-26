@@ -2841,3 +2841,133 @@ int main()
 	return 0;
 }
 ```
+###### shooting game
+####### main
+```
+#include <iostream>
+#include <time.h>
+#include <vector>
+
+#include "Console.h"
+#include "Roket.h"
+
+bool bMoveDown;
+int y;
+
+vector<Roket> rokets;
+vector<Roket> myrokets;
+
+void setConsoleView()
+{
+	system("mode con:cols=60 lines=20");
+	system("title SHOOTING GAME");
+}
+
+int main()
+{
+	bMoveDown = true;
+	y = 0;
+
+	setConsoleView();
+
+	rokets.clear();
+
+
+	int key;
+
+	while (true)
+	{
+		key = getKeyDown();
+		key = tolower(key);
+
+		if (key == 'a')
+		{
+			Roket roket;
+			roket.setRoket(y);
+
+			myrokets.push_back(roket);
+		}
+
+		if (rand() % 100 < 10) 
+		{
+			Roket roket;
+			roket.setRoket(-1);
+
+			rokets.push_back(roket);
+
+		}
+
+
+
+		for (int i = 0; i < (int)rokets.size(); i++)
+		{
+			rokets[i].moveRoket();
+			rokets[i].drawRoket();
+		}
+
+		for (int i = 0; i < (int)myrokets.size(); i++)
+		{
+			myrokets[i].moveRoket();
+			myrokets[i].drawRoket();
+		}
+
+		gotoXY(2, y);
+		cout << "▶";
+		gotoXY(59, 19);
+
+		if (bMoveDown)
+		{
+			y++;
+
+			if (y > 19)
+			{
+				y = 19;
+				bMoveDown = false;
+			}
+		}
+		else
+		{
+			y--;
+
+			if (y < 0)
+			{
+				y = 0;
+				bMoveDown = true;
+			}
+		}
+
+		for (int i = 0; i < (int)rokets.size(); i++)
+		{
+			if (rokets[i].checkEnd())
+			{
+				rokets.erase(rokets.begin() + i);
+			}
+		}
+
+		for (int i = 0; i < (int)myrokets.size(); i++)
+		{
+			if (myrokets[i].checkEnd())
+			{
+				myrokets.erase(myrokets.begin() + i);
+			}
+		}
+
+		for (int i = 0; i < (int)rokets.size(); i++)
+		{
+			for (int j = 0; j < (int)myrokets.size(); j++)
+			{
+				if (rokets[i].x == myrokets[j].x && rokets[i].y == myrokets[j].y)
+				{
+					rokets.erase(rokets.begin() + i);
+					myrokets.erase(myrokets.begin() + j);
+				}
+			}
+		}
+
+		Sleep(50);
+		clrscr();
+	}
+
+	return 0;
+}
+```
